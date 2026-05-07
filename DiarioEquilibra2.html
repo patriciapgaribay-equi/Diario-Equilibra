@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario Equilibra — Mi registro semanal</title>
+
+<style>
+  :root{
+    --teal-50:#E1F5EE;--teal-100:#9FE1CB;--teal-200:#5DCAA5;--teal-400:#1D9E75;--teal-600:#0F6E56;--teal-800:#085041;--teal-900:#04342C;
+    --coral-50:#FAECE7;--coral-100:#F5C4B3;--coral-200:#F0997B;--coral-400:#D85A30;--coral-600:#993C1D;
+    --amber-50:#FAEEDA;--amber-100:#FAC775;--amber-200:#EF9F27;--amber-400:#BA7517;--amber-600:#854F0B;
+    --gray-50:#F1EFE8;--gray-100:#D3D1C7;--gray-200:#B4B2A9;--gray-400:#888780;--gray-600:#5F5E5A;--gray-800:#444441;--gray-900:#2C2C2A;
+    --purple-50:#EEEDFE;--purple-100:#CECBF6;--purple-200:#AFA9EC;--purple-400:#7F77DD;--purple-600:#534AB7;--purple-800:#3C3489;
+    --pink-50:#FBEAF0;--pink-100:#F4C0D1;--pink-400:#D4537E;--pink-600:#993556;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--teal-50);color:var(--gray-900);min-height:100vh;}
+  .app{max-width:780px;margin:0 auto;padding:0 1rem 4rem;}
+
+  /* SETUP */
+  .setup-overlay{position:fixed;inset:0;background:rgba(4,52,44,0.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem;}
+  .setup-box{background:white;border-radius:20px;padding:2rem 1.8rem;max-width:420px;width:100%;text-align:center;}
+  .setup-logo{font-family:Georgia,'Times New Roman',serif;font-size:2rem;color:var(--teal-600);margin-bottom:3px;}
+  .setup-sub{font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--teal-400);margin-bottom:1.5rem;}
+  .setup-box p{font-size:0.83rem;color:var(--gray-600);line-height:1.55;margin-bottom:1.2rem;}
+  .setup-box input{width:100%;padding:11px 14px;border:1.5px solid var(--gray-100);border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.95rem;color:var(--gray-900);background:var(--gray-50);outline:none;margin-bottom:8px;}
+  .setup-box input:focus{border-color:var(--teal-400);background:white;}
+  .setup-row{display:flex;gap:8px;margin-bottom:8px;}
+  .setup-row input{margin-bottom:0;}
+  .setup-hint{font-size:0.7rem;color:var(--gray-400);margin-bottom:1.3rem;text-align:left;}
+  .setup-btn{width:100%;padding:13px;background:var(--teal-600);color:white;border:none;border-radius:12px;font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;cursor:pointer;transition:background 0.2s;}
+  .setup-btn:hover{background:var(--teal-800);}
+
+  /* HEADER */
+  .header{text-align:center;padding:2.2rem 0 1.2rem;border-bottom:1px solid var(--teal-100);margin-bottom:1.5rem;}
+  .logo-text{font-family:Georgia,'Times New Roman',serif;font-size:2.2rem;color:var(--teal-600);letter-spacing:-0.5px;}
+  .logo-sub{font-size:0.78rem;font-weight:500;letter-spacing:0.15em;color:var(--teal-400);text-transform:uppercase;margin-top:2px;}
+  .clienta-badge{display:inline-block;margin-top:8px;background:var(--teal-50);border:1.5px solid var(--teal-100);border-radius:20px;padding:4px 14px;font-size:0.77rem;color:var(--teal-600);font-weight:500;cursor:pointer;}
+  .clienta-badge:hover{border-color:var(--teal-400);}
+
+  /* NAV */
+  .nav{display:flex;gap:6px;background:white;border-radius:14px;padding:6px;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+  .nav-btn{flex:1;padding:10px 6px;border:none;background:transparent;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.78rem;font-weight:500;color:var(--gray-400);cursor:pointer;transition:all 0.2s;text-align:center;}
+  .nav-btn.active{background:var(--teal-600);color:white;}
+  .nav-icon{display:block;font-size:1.1rem;margin-bottom:2px;}
+  .view{display:none;}.view.active{display:block;}
+
+  /* DAYS */
+  .day-selector{display:flex;gap:6px;margin-bottom:1.5rem;overflow-x:auto;padding-bottom:4px;}
+  .day-btn{flex-shrink:0;padding:8px 14px;border:1.5px solid var(--teal-100);border-radius:24px;background:white;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.8rem;font-weight:500;color:var(--teal-600);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px;}
+  .day-btn.active{background:var(--teal-600);border-color:var(--teal-600);color:white;}
+  .day-dot{width:6px;height:6px;border-radius:50%;background:var(--teal-200);flex-shrink:0;}
+  .day-btn.active .day-dot{background:var(--teal-100);}
+  .day-btn.has-data .day-dot{background:var(--amber-200);}
+  .day-btn.active.has-data .day-dot{background:var(--amber-100);}
+
+  /* CARDS */
+  .section-card{background:white;border-radius:16px;padding:1.25rem 1.4rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(4,52,44,0.06);}
+  .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+  .section-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+  .icon-teal{background:var(--teal-50);}.icon-coral{background:var(--coral-50);}.icon-amber{background:var(--amber-50);}.icon-purple{background:var(--purple-50);}.icon-pink{background:var(--pink-50);}
+  .section-title{font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;color:var(--gray-900);}
+  .section-sub{font-size:0.73rem;color:var(--gray-400);font-weight:400;display:block;margin-top:1px;}
+
+  /* FORM */
+  label{display:block;font-size:0.78rem;font-weight:500;color:var(--gray-600);margin-bottom:5px;}
+  textarea,input[type="text"],input[type="number"]{width:100%;padding:9px 12px;border:1.5px solid var(--gray-100);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.88rem;color:var(--gray-900);background:var(--gray-50);transition:border-color 0.2s;margin-bottom:12px;outline:none;resize:none;}
+  textarea:focus,input:focus{border-color:var(--teal-400);background:white;}
+  textarea{min-height:70px;}
+
+  /* INFO BOX */
+  .info-box{border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:12px;font-size:0.78rem;line-height:1.6;border-left:3px solid;}
+  .info-box.teal{background:var(--teal-50);border-color:var(--teal-200);color:var(--teal-800);}
+  .info-box.teal strong{color:var(--teal-600);}
+  .info-box.amber{background:var(--amber-50);border-color:var(--amber-200);color:var(--amber-600);}
+  .info-box.amber strong{color:var(--amber-400);}
+  .info-box.purple{background:var(--purple-50);border-color:var(--purple-200);color:var(--purple-800);}
+  .info-box.purple strong{color:var(--purple-600);}
+
+  /* SCALE */
+  .scale-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .scale-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--gray-100);background:white;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.82rem;font-weight:500;color:var(--gray-600);cursor:pointer;transition:all 0.15s;}
+  .scale-btn.sel-teal{background:var(--teal-600);border-color:var(--teal-600);color:white;}
+  .scale-btn.sel-coral{background:var(--coral-400);border-color:var(--coral-400);color:white;}
+  .scale-btn.sel-amber{background:var(--amber-400);border-color:var(--amber-400);color:white;}
+  .scale-btn.sel-purple{background:var(--purple-600);border-color:var(--purple-600);color:white;}
+
+  /* CHIPS */
+  .emotion-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .emotion-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--gray-100);background:white;font-size:0.78rem;font-weight:500;color:var(--gray-600);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .emotion-chip.sel{background:var(--pink-50);border-color:var(--pink-400);color:var(--pink-600);}
+
+  /* SEMAFORO */
+  .semaforo{display:flex;gap:8px;margin-bottom:12px;}
+  .sem-btn{flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid transparent;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.78rem;font-weight:500;transition:all 0.15s;text-align:center;line-height:1.35;}
+  .sem-verde{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97;}
+  .sem-verde.sel{background:#639922;color:white;border-color:#639922;}
+  .sem-amarillo{background:var(--amber-50);color:var(--amber-600);border-color:var(--amber-100);}
+  .sem-amarillo.sel{background:var(--amber-400);color:white;border-color:var(--amber-400);}
+  .sem-rojo{background:#FCEBEB;color:#A32D2D;border-color:#F7C1C1;}
+  .sem-rojo.sel{background:#E24B4A;color:white;border-color:#E24B4A;}
+
+  /* MEALS */
+  .meal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  @media(max-width:500px){.meal-grid{grid-template-columns:1fr;}}
+  .meal-block label{font-size:0.73rem;}
+  .meal-block textarea{min-height:58px;font-size:0.82rem;margin-bottom:0;}
+
+  .field-row{display:flex;gap:8px;}.field-row>*{flex:1;}
+
+  /* BUTTONS */
+  .save-btn{width:100%;padding:14px;background:var(--teal-600);color:white;border:none;border-radius:12px;font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;cursor:pointer;transition:all 0.2s;margin-top:0.5rem;}
+  .save-btn:hover{background:var(--teal-800);}
+  .save-btn:active{transform:scale(0.99);}
+  .saved-notice{text-align:center;font-size:0.8rem;color:var(--teal-400);margin-top:8px;height:18px;font-weight:500;}
+
+  /* RESUMEN */
+  .resumen-card{background:white;border-radius:16px;padding:1.4rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(4,52,44,0.06);}
+  .resumen-title{font-family:Georgia,'Times New Roman',serif;font-size:1.1rem;color:var(--teal-800);margin-bottom:1rem;}
+  #resumen-output{background:var(--gray-50);border:1.5px solid var(--gray-100);border-radius:12px;padding:1rem;font-size:0.82rem;line-height:1.65;color:var(--gray-900);white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;min-height:200px;max-height:480px;overflow-y:auto;}
+  .copy-btn{width:100%;padding:12px;background:var(--teal-50);color:var(--teal-800);border:1.5px solid var(--teal-200);border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;margin-top:10px;transition:all 0.2s;}
+  .copy-btn:hover{background:var(--teal-600);color:white;border-color:var(--teal-600);}
+  .export-btn{width:100%;padding:11px;background:white;color:var(--gray-600);border:1.5px solid var(--gray-100);border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:0.83rem;font-weight:500;cursor:pointer;margin-top:8px;transition:all 0.2s;}
+  .export-btn:hover{border-color:var(--gray-400);color:var(--gray-900);}
+
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
+  .stat-box{background:var(--teal-50);border-radius:12px;padding:10px 8px;text-align:center;}
+  .stat-num{font-family:Georgia,'Times New Roman',serif;font-size:1.5rem;color:var(--teal-600);line-height:1;display:block;}
+  .stat-lbl{font-size:0.67rem;color:var(--teal-400);font-weight:500;margin-top:3px;display:block;}
+
+  .tip-box{background:var(--amber-50);border:1.5px solid var(--amber-100);border-radius:12px;padding:12px 14px;font-size:0.78rem;color:var(--amber-600);line-height:1.55;margin-bottom:1rem;}
+  .tip-box strong{color:var(--amber-400);}
+
+  /* INSTRUCCIONES */
+  .instr-card{background:white;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+  .instr-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+  .step-num{width:26px;height:26px;background:var(--teal-600);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:600;flex-shrink:0;margin-top:1px;}
+  .instr-text{font-size:0.83rem;line-height:1.55;color:var(--gray-800);}
+  .instr-h{font-family:Georgia,'Times New Roman',serif;font-size:1rem;color:var(--teal-800);margin-bottom:12px;}
+  .link-box{background:var(--teal-50);border:1.5px solid var(--teal-100);border-radius:10px;padding:10px 14px;font-size:0.79rem;color:var(--teal-600);margin-top:4px;margin-bottom:8px;font-weight:500;line-height:1.5;}
+
+  .progress-bar{height:6px;background:var(--gray-100);border-radius:3px;margin-bottom:1.5rem;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--teal-400);border-radius:3px;transition:width 0.4s;}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="setup-overlay" id="setup-overlay">
+  <div class="setup-box">
+    <div class="setup-logo">Equilibra</div>
+    <div class="setup-sub">Diario de transformación</div>
+    <p>Para que tu coach pueda identificar tu registro semana a semana, escribe tu nombre y los datos de tu grupo antes de comenzar.</p>
+    <input type="text" id="setup-nombre" placeholder="Tu nombre completo" maxlength="60">
+    <div class="setup-row">
+      <input type="number" id="setup-semana" placeholder="Semana # (1–16)" min="1" max="16">
+      <input type="text" id="setup-grupo" placeholder="Nombre de tu grupo" maxlength="40">
+    </div>
+    <p class="setup-hint">Esta información aparece automáticamente en el archivo que envías a tu coach.</p>
+    <button class="setup-btn" onclick="setupDone()">Comenzar mi diario →</button>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+
+  <div class="header">
+    <div class="logo-text">Equilibra</div>
+    <div class="logo-sub">Mi diario de transformación</div>
+    <div class="clienta-badge" id="clienta-badge" onclick="resetSetup()">⟳ Cambiar datos</div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showView('registro')" id="nav-registro"><span class="nav-icon">📝</span>Diario</button>
+    <button class="nav-btn" onclick="showView('resumen')" id="nav-resumen"><span class="nav-icon">📊</span>Resumen</button>
+    <button class="nav-btn" onclick="showView('instrucciones')" id="nav-instrucciones"><span class="nav-icon">💡</span>Cómo usar</button>
+  </div>
+
+  <!-- ======= REGISTRO ======= -->
+  <div id="view-registro" class="view active">
+
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="day-selector" id="day-selector"></div>
+
+    <!-- ANTOJOS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon icon-coral">🍬</div>
+        <div><div class="section-title">Registro de antojos</div><span class="section-sub">¿Qué, cuándo y por qué?</span></div>
+      </div>
+
+      <label>¿Tuve antojos hoy?</label>
+      <div class="semaforo">
+        <button class="sem-btn sem-verde" data-field="antojo_tuvo" data-val="no" onclick="semClick(this,'antojo_tuvo')">✓ No</button>
+        <button class="sem-btn sem-amarillo" data-field="antojo_tuvo" data-val="leve" onclick="semClick(this,'antojo_tuvo')">~ Leve</button>
+        <button class="sem-btn sem-rojo" data-field="antojo_tuvo" data-val="intenso" onclick="semClick(this,'antojo_tuvo')">! Intenso</button>
+      </div>
+
+      <label>¿Qué se me antojó?</label>
+      <textarea id="antojo_que" placeholder="Ej: dulce, pan, refresco, chocolate…" oninput="autoSave()"></textarea>
+
+      <label>¿En qué momento del día?</label>
+      <input type="text" id="antojo_hora" placeholder="Ej: 4pm, después de comer…" oninput="autoSave()">
+
+      <label>Intensidad del antojo — del 1 al 10</label>
+      <div class="scale-row" id="scale-antojo"></div>
+
+      <label>¿Qué estaba sintiendo en ese momento?</label>
+      <div class="emotion-grid" id="triggers-antojo">
+        <span class="emotion-chip" onclick="chipToggle(this)">Estrés</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Aburrimiento</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Ansiedad</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Tristeza</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Cansancio</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Celebración</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Soledad</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Hambre real</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Hábito automático</span>
+      </div>
+
+      <label>¿Aplicaste la técnica del bocado?</label>
+      <div class="info-box teal">
+        <strong>Técnica del bocado consciente:</strong> Ante un antojo intenso (≥ 6/10), date un bocado pequeño, respira y distráete 5 minutos antes de decidir si continúas. El pico de placer del azúcar dura entre 3 y 8 segundos — esta técnica interrumpe el ciclo automático y lo hace visible. No es una falla: es parte del protocolo.
+      </div>
+      <div class="semaforo">
+        <button class="sem-btn sem-verde" data-field="bocado_tecnica" data-val="sí" onclick="semClick(this,'bocado_tecnica')">Sí, la apliqué</button>
+        <button class="sem-btn sem-rojo" data-field="bocado_tecnica" data-val="no" onclick="semClick(this,'bocado_tecnica')">No la apliqué</button>
+      </div>
+    </div>
+
+    <!-- ALIMENTACIÓN -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon icon-teal">🥗</div>
+        <div><div class="section-title">Alimentación del día</div><span class="section-sub">Sin juicio — solo observar</span></div>
+      </div>
+
+      <div class="meal-grid">
+        <div class="meal-block">
+          <label>☀️ Desayuno</label>
+          <textarea id="comida_desayuno" placeholder="¿Qué comiste?" oninput="autoSave()"></textarea>
+        </div>
+        <div class="meal-block">
+          <label>🌞 Comida / almuerzo</label>
+          <textarea id="comida_comida" placeholder="¿Qué comiste?" oninput="autoSave()"></textarea>
+        </div>
+        <div class="meal-block">
+          <label>🌙 Cena</label>
+          <textarea id="comida_cena" placeholder="¿Qué comiste?" oninput="autoSave()"></textarea>
+        </div>
+        <div class="meal-block">
+          <label>➕ Extra</label>
+          <textarea id="comida_extra" placeholder="Algo fuera de comidas principales…" oninput="autoSave()"></textarea>
+        </div>
+      </div>
+
+      <label>Escala de hambre-saciedad</label>
+      <div class="info-box teal">
+        <strong>Del 1 al 10:</strong> 1 = hambrienta al punto del malestar · 3 = hambre clara, momento de comer · 5 = neutral · 7 = satisfecha, cómoda · 10 = demasiado llena, malestar.<br><em>Meta: comer cuando estás en 3 y detenerte al llegar a 7.</em>
+      </div>
+      <div class="field-row">
+        <div>
+          <label style="font-size:0.68rem;color:var(--gray-400);">Antes de comer</label>
+          <div class="scale-row" id="scale-hambre"></div>
+        </div>
+        <div>
+          <label style="font-size:0.68rem;color:var(--gray-400);">Después de comer</label>
+          <div class="scale-row" id="scale-saciedad"></div>
+        </div>
+      </div>
+
+      <label>¿Comí con mindfulness? (sin pantallas, masticando despacio)</label>
+      <div class="semaforo">
+        <button class="sem-btn sem-verde" data-field="mindful" data-val="sí" onclick="semClick(this,'mindful')">Sí 🌿</button>
+        <button class="sem-btn sem-amarillo" data-field="mindful" data-val="parcial" onclick="semClick(this,'mindful')">A veces</button>
+        <button class="sem-btn sem-rojo" data-field="mindful" data-val="no" onclick="semClick(this,'mindful')">Con pantalla</button>
+      </div>
+
+      <label>Vasos de agua aproximados hoy — meta: ~8</label>
+      <div class="scale-row" id="scale-agua"></div>
+    </div>
+
+    <!-- MOVIMIENTO -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon icon-amber">🏃</div>
+        <div><div class="section-title">Movimiento</div><span class="section-sub">Cada paso cuenta</span></div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label>Pasos del día</label>
+          <input type="number" id="pasos" placeholder="Ej: 6500" min="0" max="30000" oninput="autoSave()">
+        </div>
+        <div>
+          <label>Minutos de ejercicio</label>
+          <input type="number" id="min_ejercicio" placeholder="Ej: 30" min="0" max="180" oninput="autoSave()">
+        </div>
+      </div>
+
+      <label>¿Qué tipo de movimiento hice?</label>
+      <div class="emotion-grid" id="tipo-ejercicio">
+        <span class="emotion-chip" onclick="chipToggle(this)">Caminata</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Circuito fuerza</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Cardio suave</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">HIIT</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Yoga / Pilates</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Baile</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Movilidad matutina</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Nada hoy</span>
+      </div>
+
+      <label>¿Cómo se sintió mi cuerpo al moverse?</label>
+      <textarea id="cuerpo_sentir" placeholder="Ej: con energía, cansada pero satisfecha, con dolor en rodilla…" oninput="autoSave()"></textarea>
+
+      <label>¿Estuve a punto de no hacerlo y lo hice de todas formas?</label>
+      <div class="semaforo">
+        <button class="sem-btn sem-verde" data-field="resistencia_superada" data-val="sí" onclick="semClick(this,'resistencia_superada')">Sí, lo hice</button>
+        <button class="sem-btn sem-amarillo" data-field="resistencia_superada" data-val="no_hubo_resistencia" onclick="semClick(this,'resistencia_superada')">No hubo resistencia</button>
+        <button class="sem-btn sem-rojo" data-field="resistencia_superada" data-val="no_lo_hice" onclick="semClick(this,'resistencia_superada')">No lo hice</button>
+      </div>
+
+      <label>¿Qué me ayudó a hacerlo?</label>
+      <div class="info-box purple">
+        <strong>Sistema anti-negociación:</strong> Las mujeres que sostienen el movimiento tienen algo en común — en algún momento dejó de ser algo que <em>hacen</em> y se convirtió en algo que <em>son</em>. Tres sistemas que funcionan:<br>
+        <strong>(1) Acción directa:</strong> "No me pregunto. Me pongo la ropa de entreno y empiezo." La ropa activa el comportamiento antes de que el cerebro vete la idea.<br>
+        <strong>(2) Compromiso:</strong> "Recuerdo a quién le debo esto." Se activa el marco de responsabilidad hacia una misma o hacia alguien más.<br>
+        <strong>(3) Consecuencia:</strong> "Sé exactamente cómo se va a sentir mi cuerpo si no lo hago." Proyectar el malestar futuro como ancla presente.
+      </div>
+      <textarea id="que_ayudo" placeholder="Ej: Me puse la ropa y ya arranqué. / Pensé en cómo me sentiría si no lo hacía. / Le había prometido a alguien…" oninput="autoSave()"></textarea>
+
+      <label>¿Aplicaste la regla de los 2 minutos?</label>
+      <div class="info-box amber">
+        <strong>Regla de los 2 minutos:</strong> En los días de máxima resistencia, el único compromiso es <em>2 minutos de movimiento</em>. Solo empezar. El 90% de las veces el cuerpo continúa una vez en movimiento. Y los días que no, los 2 minutos cuentan igual — porque reforzaste la identidad de alguien que cumple su compromiso.
+      </div>
+      <div class="semaforo">
+        <button class="sem-btn sem-verde" data-field="regla2min" data-val="sí_y_continué" onclick="semClick(this,'regla2min')">Sí, y continué</button>
+        <button class="sem-btn sem-amarillo" data-field="regla2min" data-val="solo_2min" onclick="semClick(this,'regla2min')">Solo 2 min</button>
+        <button class="sem-btn sem-rojo" data-field="regla2min" data-val="no_apliqué" onclick="semClick(this,'regla2min')">No apliqué</button>
+      </div>
+    </div>
+
+    <!-- EMOCIONAL -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon icon-purple">💜</div>
+        <div><div class="section-title">Estado emocional</div><span class="section-sub">Sin filtros — esto es solo tuyo</span></div>
+      </div>
+
+      <label>¿Cómo me sentí hoy en general?</label>
+      <div class="emotion-grid" id="emocion-general">
+        <span class="emotion-chip" onclick="chipToggle(this)">Bien</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Tranquila</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Motivada</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Ansiosa</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Estresada</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Cansada</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Triste</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Frustrada</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">Esperanzada</span>
+        <span class="emotion-chip" onclick="chipToggle(this)">En paz</span>
+      </div>
+
+      <label>¿Dormí bien anoche?</label>
+      <div class="field-row">
+        <div>
+          <label style="font-size:0.68rem;color:var(--gray-400);">Horas aproximadas</label>
+          <div class="scale-row" id="scale-sueno"></div>
+        </div>
+        <div>
+          <label style="font-size:0.68rem;color:var(--gray-400);">Calidad</label>
+          <div class="semaforo" style="margin-bottom:0">
+            <button class="sem-btn sem-verde" data-field="sueno_calidad" data-val="buena" onclick="semClick(this,'sueno_calidad')">Buena</button>
+            <button class="sem-btn sem-amarillo" data-field="sueno_calidad" data-val="regular" onclick="semClick(this,'sueno_calidad')">Regular</button>
+            <button class="sem-btn sem-rojo" data-field="sueno_calidad" data-val="mala" onclick="semClick(this,'sueno_calidad')">Mala</button>
+          </div>
+        </div>
+      </div>
+
+      <label style="margin-top:10px;">Mi semáforo de adherencia hoy</label>
+      <div class="semaforo">
+        <button class="sem-btn sem-verde" data-field="semaforo" data-val="verde" onclick="semClick(this,'semaforo')">🟢 Verde<br><span style="font-size:0.65rem;font-weight:400;">Elegí bien</span></button>
+        <button class="sem-btn sem-amarillo" data-field="semaforo" data-val="amarillo" onclick="semClick(this,'semaforo')">🟡 Amarillo<br><span style="font-size:0.65rem;font-weight:400;">Antojo presente</span></button>
+        <button class="sem-btn sem-rojo" data-field="semaforo" data-val="rojo" onclick="semClick(this,'semaforo')">🔴 Rojo<br><span style="font-size:0.65rem;font-weight:400;">Fue difícil</span></button>
+      </div>
+
+      <label>Mi victoria pequeña del día 🏆</label>
+      <textarea id="victoria" placeholder="Una sola cosa, aunque parezca mínima. ¡Cuenta!" oninput="autoSave()"></textarea>
+
+      <label>¿Qué aprendí hoy sobre mí?</label>
+      <textarea id="aprendizaje" placeholder="Reflexión libre, sin juicio…" oninput="autoSave()"></textarea>
+
+      <label>Nivel de energía general hoy (1 = agotada · 10 = con mucha energía)</label>
+      <div class="scale-row" id="scale-energia"></div>
+
+      <label>¿Algo más que quiera anotar?</label>
+      <textarea id="notas_extra" placeholder="Síntomas, algo que noté en mi cuerpo, un pensamiento importante…" oninput="autoSave()"></textarea>
+    </div>
+
+    <!-- COMPROMISO -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon icon-pink">✨</div>
+        <div><div class="section-title">Mi compromiso para mañana</div><span class="section-sub">Una intención concreta</span></div>
+      </div>
+      <label>Una acción que me comprometo a hacer mañana</label>
+      <textarea id="compromiso" placeholder="Ej: Hacer 10 min de movilidad al despertar. Desayunar con proteína antes de salir." oninput="autoSave()"></textarea>
+    </div>
+
+    <button class="save-btn" onclick="guardarDia()">Guardar día ✓</button>
+    <div class="saved-notice" id="save-notice"></div>
+
+  </div><!-- /registro -->
+
+  <!-- ======= RESUMEN ======= -->
+  <div id="view-resumen" class="view">
+
+    <div class="stats-row">
+      <div class="stat-box"><span class="stat-num" id="st-dias">0</span><span class="stat-lbl">Días registrados</span></div>
+      <div class="stat-box"><span class="stat-num" id="st-verdes">0</span><span class="stat-lbl">Días verdes</span></div>
+      <div class="stat-box"><span class="stat-num" id="st-pasos">—</span><span class="stat-lbl">Pasos prom.</span></div>
+      <div class="stat-box"><span class="stat-num" id="st-victorias">0</span><span class="stat-lbl">Victorias</span></div>
+    </div>
+
+    <div class="tip-box">
+      <strong>📱 El domingo:</strong> genera tu resumen, cópialo y envíalo al grupo de WhatsApp Equilibra. Luego usa el botón CSV para enviar tu archivo a tu coach — es tu registro completo de la semana.
+    </div>
+
+    <div class="resumen-card">
+      <div class="resumen-title">📋 Resumen semanal para WhatsApp</div>
+      <div id="resumen-output">Completa al menos un día para generar tu resumen.</div>
+      <button class="copy-btn" onclick="copiarResumen()">📋 Copiar para WhatsApp</button>
+      <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV para mi coach</button>
+    </div>
+
+    <div class="resumen-card">
+      <div class="resumen-title">📊 Mi semana de un vistazo</div>
+      <div id="semana-visual"></div>
+    </div>
+
+  </div>
+
+  <!-- ======= INSTRUCCIONES ======= -->
+  <div id="view-instrucciones" class="view">
+
+    <div class="instr-card">
+      <div class="instr-h">¿Cómo usar este diario?</div>
+      <div class="instr-step"><div class="step-num">1</div><div class="instr-text">La primera vez que abres el diario, escribe tu nombre, el número de semana y tu grupo. Esto identifica tu registro para el equipo Equilibra.</div></div>
+      <div class="instr-step"><div class="step-num">2</div><div class="instr-text">Cada día selecciona el día de la semana en la barra (Lun – Dom) y llena cada sección. <strong>No tarda más de 3–5 minutos.</strong></div></div>
+      <div class="instr-step"><div class="step-num">3</div><div class="instr-text">Presiona <strong>"Guardar día"</strong> al terminar. El punto naranja en el botón indica que ese día ya tiene datos.</div></div>
+      <div class="instr-step"><div class="step-num">4</div><div class="instr-text">El <strong>domingo</strong>, ve a la pestaña "Resumen", copia tu reporte y envíalo al <strong>grupo de WhatsApp</strong> Equilibra.</div></div>
+      <div class="instr-step"><div class="step-num">5</div><div class="instr-text">Descarga el CSV con el botón <strong>"Exportar CSV para mi coach"</strong> y envíaselo al grupo o por privado — es tu registro estructurado de toda la semana.</div></div>
+      <div class="link-box">💡 Guarda este archivo en favoritos de tu navegador para abrirlo rápido cada día.</div>
+    </div>
+
+    <div class="instr-card">
+      <div class="instr-h">El semáforo de adherencia</div>
+      <div class="instr-step"><div class="step-num" style="background:#639922">🟢</div><div class="instr-text"><strong>Verde:</strong> elegiste bien, usaste la técnica del bocado o lograste resistir. ¡Celebra ese momento!</div></div>
+      <div class="instr-step"><div class="step-num" style="background:#BA7517">🟡</div><div class="instr-text"><strong>Amarillo:</strong> el antojo estuvo presente o el protocolo fue omitido algún día. Normal — reflexiona qué pasó.</div></div>
+      <div class="instr-step"><div class="step-num" style="background:#E24B4A">🔴</div><div class="instr-text"><strong>Rojo:</strong> día difícil, atracón o culpa intensa. Sin juicio — anótalo y coméntalo en sesión. Para eso estamos.</div></div>
+    </div>
+
+    <div class="instr-card">
+      <div class="instr-h">Para el equipo coach — base de datos semanal</div>
+      <div class="instr-text" style="margin-bottom:12px;">Cada CSV exportado incluye: nombre de la clienta, semana del programa, grupo y todos los campos del diario. Para construir el concentrado histórico en Google Sheets:</div>
+      <div class="instr-step"><div class="step-num">1</div><div class="instr-text">Crea un Google Sheet llamado <strong>"Base Equilibra"</strong>. La primera vez, importa un CSV completo para que los encabezados queden fijos: Archivo → Importar → Reemplazar hoja actual.</div></div>
+      <div class="instr-step"><div class="step-num">2</div><div class="instr-text">Cada semana que recibas un CSV de una clienta: Archivo → Importar → selecciona el CSV → elige <strong>"Agregar al final de la hoja"</strong>. Los datos se acumulan semana a semana.</div></div>
+      <div class="instr-step"><div class="step-num">3</div><div class="instr-text">Usa los filtros de Google Sheets sobre la columna <strong>Clienta</strong> y <strong>Semana</strong> para comparar el progreso individual a lo largo del programa.</div></div>
+      <div class="link-box">📊 Con la columna <strong>Semáforo</strong> puedes crear un gráfico de barras apiladas por clienta y ver visualmente su evolución semana a semana. La columna <strong>Resistencia_superada</strong> y <strong>Bocado_técnica_aplicó</strong> son señales tempranas de adherencia conductual.</div>
+    </div>
+
+  </div>
+
+</div><!-- /app -->
+
+<script>
+const DAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const FULL_DAYS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+let currentDay=0, weekData={};
+let clientaNombre='', clientaSemana='', clientaGrupo='';
+
+const SEM_FIELDS=['antojo_tuvo','bocado_tecnica','mindful','resistencia_superada','regla2min','semaforo','sueno_calidad'];
+const SCALES={
+  'scale-antojo':{id:'antojo_intensidad',color:'sel-coral',max:10},
+  'scale-hambre':{id:'hambre_antes',color:'sel-teal',max:10},
+  'scale-saciedad':{id:'saciedad_despues',color:'sel-teal',max:10},
+  'scale-agua':{id:'agua_vasos',color:'sel-teal',max:10},
+  'scale-sueno':{id:'sueno_horas',color:'sel-purple',max:9,start:4},
+  'scale-energia':{id:'energia',color:'sel-teal',max:10},
+};
+const CHIPS={
+  'triggers-antojo':'antojo_gatillos',
+  'tipo-ejercicio':'ejercicio_tipo',
+  'emocion-general':'emocion_hoy'
+};
+const TEXT_FIELDS=['antojo_que','antojo_hora','comida_desayuno','comida_comida','comida_cena','comida_extra','cuerpo_sentir','que_ayudo','victoria','aprendizaje','notas_extra','compromiso','pasos','min_ejercicio'];
+
+function setupDone(){
+  const n=document.getElementById('setup-nombre').value.trim();
+  if(!n){document.getElementById('setup-nombre').focus();return;}
+  clientaNombre=n;
+  clientaSemana=document.getElementById('setup-semana').value.trim();
+  clientaGrupo=document.getElementById('setup-grupo').value.trim();
+  document.getElementById('setup-overlay').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  document.getElementById('clienta-badge').textContent='👤 '+clientaNombre+(clientaSemana?' · Semana '+clientaSemana:'')+(clientaGrupo?' · '+clientaGrupo:'');
+  init();
+}
+function resetSetup(){
+  document.getElementById('setup-nombre').value=clientaNombre;
+  document.getElementById('setup-semana').value=clientaSemana;
+  document.getElementById('setup-grupo').value=clientaGrupo;
+  document.getElementById('setup-overlay').style.display='flex';
+}
+
+function init(){
+  const sel=document.getElementById('day-selector');
+  sel.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const b=document.createElement('button');
+    b.className='day-btn';b.id='daybtn-'+i;
+    b.onclick=()=>cambiarDia(i);
+    b.innerHTML=`<span class="day-dot"></span>${d}`;
+    sel.appendChild(b);
+  });
+  Object.entries(SCALES).forEach(([cid,cfg])=>{
+    const c=document.getElementById(cid);if(!c)return;
+    c.innerHTML='';
+    for(let n=cfg.start||1;n<=cfg.max;n++){
+      const b=document.createElement('button');
+      b.className='scale-btn';b.textContent=n;b.dataset.val=n;b.dataset.color=cfg.color;
+      b.onclick=function(){scaleClick(this,cid);};
+      c.appendChild(b);
+    }
+  });
+  cambiarDia(new Date().getDay()===0?6:new Date().getDay()-1);
+  generarResumen();
+}
+
+function cambiarDia(idx){
+  guardarEstadoActual();currentDay=idx;
+  document.querySelectorAll('.day-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  cargarDia(idx);updateProgress();
+}
+
+function guardarEstadoActual(){
+  const d={};
+  TEXT_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)d[id]=el.value;});
+  SEM_FIELDS.forEach(f=>{d[f]=getSelectedSem(f);});
+  Object.values(SCALES).forEach(cfg=>{d[cfg.id]=getScaleVal(cfg.id);});
+  Object.entries(CHIPS).forEach(([cont,field])=>{
+    d[field]=[...document.querySelectorAll('#'+cont+' .emotion-chip.sel')].map(c=>c.textContent).join(', ');
+  });
+  weekData[currentDay]=d;
+}
+
+function cargarDia(idx){
+  const d=weekData[idx]||{};
+  TEXT_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value=d[id]||'';});
+  document.querySelectorAll('.sem-btn').forEach(b=>{b.classList.toggle('sel',d[b.dataset.field]===b.dataset.val);});
+  Object.entries(SCALES).forEach(([cid,cfg])=>{
+    document.querySelectorAll('#'+cid+' .scale-btn').forEach(b=>{
+      b.className='scale-btn';
+      if(d[cfg.id]&&parseInt(b.dataset.val)===parseInt(d[cfg.id]))b.classList.add(cfg.color);
+    });
+  });
+  Object.entries(CHIPS).forEach(([cont,field])=>{
+    const saved=(d[field]||'').split(', ').map(s=>s.trim()).filter(Boolean);
+    document.querySelectorAll('#'+cont+' .emotion-chip').forEach(c=>c.classList.toggle('sel',saved.includes(c.textContent.trim())));
+  });
+  updateDayDot(idx);
+}
+
+function semClick(btn,field){
+  document.querySelectorAll(`[data-field="${field}"]`).forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');autoSave();
+}
+function scaleClick(btn,cid){
+  const cfg=SCALES[cid];
+  document.querySelectorAll('#'+cid+' .scale-btn').forEach(b=>b.className='scale-btn');
+  btn.classList.add(cfg.color);autoSave();
+}
+function chipToggle(chip){chip.classList.toggle('sel');autoSave();}
+
+function getSelectedSem(field){const s=document.querySelector(`[data-field="${field}"].sel`);return s?s.dataset.val:'';}
+function getScaleVal(fieldId){
+  for(const[cid,cfg]of Object.entries(SCALES)){
+    if(cfg.id===fieldId){const f=document.querySelector(`#${cid} .scale-btn.${cfg.color}`);return f?f.dataset.val:'';}
+  }return '';
+}
+function autoSave(){guardarEstadoActual();updateDayDot(currentDay);updateProgress();}
+function updateDayDot(idx){
+  const d=weekData[idx]||{};
+  document.getElementById('daybtn-'+idx)?.classList.toggle('has-data',Object.values(d).some(v=>v&&v!==''));
+}
+function updateProgress(){
+  const n=Object.keys(weekData).filter(k=>{const d=weekData[k];return d&&Object.values(d).some(v=>v&&v!=='');}).length;
+  document.getElementById('prog-fill').style.width=Math.round((n/7)*100)+'%';
+}
+function guardarDia(){
+  guardarEstadoActual();updateDayDot(currentDay);updateProgress();generarResumen();
+  const el=document.getElementById('save-notice');
+  el.textContent='✓ Día guardado correctamente';
+  setTimeout(()=>{el.textContent='';},2500);
+}
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  if(v==='resumen'){guardarEstadoActual();generarResumen();}
+}
+
+function generarResumen(){
+  const conDatos=DAYS.filter((_,i)=>{const d=weekData[i]||{};return Object.values(d).some(v=>v&&v!=='');});
+  if(!conDatos.length){document.getElementById('resumen-output').textContent='Completa al menos un día para generar tu resumen.';return;}
+
+  const hoy=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
+  let txt=`✨ DIARIO EQUILIBRA — Resumen semanal\n`;
+  if(clientaNombre)txt+=`👤 ${clientaNombre}${clientaSemana?' · Semana '+clientaSemana:''}${clientaGrupo?' · Grupo: '+clientaGrupo:''}\n`;
+  txt+=`📅 ${hoy}\n━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  let verdes=0,amarillos=0,rojos=0,pasos=[],victorias=[];
+
+  DAYS.forEach((day,i)=>{
+    const d=weekData[i];
+    if(!d||!Object.values(d).some(v=>v&&v!==''))return;
+    txt+=`📌 ${FULL_DAYS[i].toUpperCase()}\n`;
+
+    const comidas=[
+      d.comida_desayuno&&`Desayuno: ${d.comida_desayuno}`,
+      d.comida_comida&&`Comida: ${d.comida_comida}`,
+      d.comida_cena&&`Cena: ${d.comida_cena}`,
+      d.comida_extra&&`Extra: ${d.comida_extra}`,
+    ].filter(Boolean);
+    if(comidas.length){txt+=`🥗 Alimentación:\n`;comidas.forEach(c=>txt+=`   • ${c}\n`);}
+    if(d.hambre_antes||d.saciedad_despues)txt+=`   Hambre→Saciedad: ${d.hambre_antes||'—'}/10 → ${d.saciedad_despues||'—'}/10\n`;
+    if(d.mindful)txt+=`   Mindful eating: ${d.mindful}\n`;
+    if(d.agua_vasos)txt+=`   💧 Agua: ${d.agua_vasos} vasos\n`;
+
+    if(d.antojo_tuvo||d.antojo_que){
+      txt+=`🍬 Antojos:\n`;
+      if(d.antojo_tuvo)txt+=`   Tuvo antojo: ${d.antojo_tuvo}\n`;
+      if(d.antojo_que)txt+=`   ¿Qué? ${d.antojo_que}\n`;
+      if(d.antojo_intensidad)txt+=`   Intensidad: ${d.antojo_intensidad}/10\n`;
+      if(d.antojo_gatillos)txt+=`   Gatillo: ${d.antojo_gatillos}\n`;
+      if(d.bocado_tecnica)txt+=`   Técnica del bocado: ${d.bocado_tecnica}\n`;
+    }
+
+    if(d.pasos||d.min_ejercicio||d.ejercicio_tipo){
+      txt+=`🏃 Movimiento:\n`;
+      if(d.pasos){txt+=`   Pasos: ${parseInt(d.pasos).toLocaleString('es-MX')}\n`;pasos.push(parseInt(d.pasos));}
+      if(d.min_ejercicio)txt+=`   Minutos: ${d.min_ejercicio} min\n`;
+      if(d.ejercicio_tipo)txt+=`   Tipo: ${d.ejercicio_tipo}\n`;
+      if(d.resistencia_superada)txt+=`   Resistencia superada: ${d.resistencia_superada}\n`;
+      if(d.que_ayudo)txt+=`   Lo que me ayudó: ${d.que_ayudo}\n`;
+      if(d.regla2min)txt+=`   Regla 2 min: ${d.regla2min}\n`;
+      if(d.cuerpo_sentir)txt+=`   Cómo se sintió: ${d.cuerpo_sentir}\n`;
+    }
+
+    txt+=`💜 Estado emocional:\n`;
+    if(d.emocion_hoy)txt+=`   Emociones: ${d.emocion_hoy}\n`;
+    if(d.sueno_horas)txt+=`   Sueño: ${d.sueno_horas}h (${d.sueno_calidad||'—'})\n`;
+    if(d.energia)txt+=`   Energía: ${d.energia}/10\n`;
+
+    const sem=d.semaforo;
+    if(sem){
+      txt+=`   Semáforo: ${{verde:'🟢',amarillo:'🟡',rojo:'🔴'}[sem]||''} ${sem.charAt(0).toUpperCase()+sem.slice(1)}\n`;
+      if(sem==='verde')verdes++;else if(sem==='amarillo')amarillos++;else rojos++;
+    }
+    if(d.victoria){txt+=`🏆 Victoria: ${d.victoria}\n`;victorias.push(d.victoria);}
+    if(d.aprendizaje)txt+=`💡 Aprendizaje: ${d.aprendizaje}\n`;
+    if(d.compromiso)txt+=`🎯 Compromiso para mañana: ${d.compromiso}\n`;
+    if(d.notas_extra)txt+=`📎 Notas: ${d.notas_extra}\n`;
+    txt+=`\n`;
+  });
+
+  txt+=`━━━━━━━━━━━━━━━━━━━━\n📊 RESUMEN DE LA SEMANA\n`;
+  txt+=`Días registrados: ${conDatos.length}/7\n`;
+  txt+=`Semáforos: 🟢${verdes} 🟡${amarillos} 🔴${rojos}\n`;
+  if(pasos.length){const avg=Math.round(pasos.reduce((a,b)=>a+b,0)/pasos.length);txt+=`Pasos promedio: ${avg.toLocaleString('es-MX')}/día\n`;}
+  txt+=`Victorias: ${victorias.length}\n`;
+  victorias.forEach((v,i)=>txt+=`   ${i+1}. ${v}\n`);
+  txt+=`\nEnviado con ❤️ desde mi Diario Equilibra`;
+
+  document.getElementById('resumen-output').textContent=txt;
+
+  document.getElementById('st-dias').textContent=conDatos.length;
+  document.getElementById('st-verdes').textContent=verdes;
+  const avg=pasos.length?Math.round(pasos.reduce((a,b)=>a+b,0)/pasos.length):null;
+  document.getElementById('st-pasos').textContent=avg?(avg>=1000?(avg/1000).toFixed(1)+'k':avg):'—';
+  document.getElementById('st-victorias').textContent=victorias.length;
+
+  let vis='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  DAYS.forEach((d,i)=>{
+    const data=weekData[i]||{};
+    const has=Object.values(data).some(v=>v&&v!=='');
+    const col={verde:'#639922',amarillo:'#BA7517',rojo:'#E24B4A'}[data.semaforo]||(has?'#1D9E75':'#D3D1C7');
+    vis+=`<div style="flex:1;min-width:60px;background:${col};border-radius:10px;padding:10px 6px;text-align:center;">`;
+    vis+=`<div style="font-size:0.72rem;font-weight:600;color:white;opacity:0.85">${d}</div>`;
+    vis+=`<div style="font-size:0.65rem;color:white;margin-top:3px;opacity:0.7">${has?'✓':'—'}</div>`;
+    if(data.pasos)vis+=`<div style="font-size:0.6rem;color:white;margin-top:2px;opacity:0.8">${(Math.round(parseInt(data.pasos)/100)/10).toFixed(1)}k</div>`;
+    vis+='</div>';
+  });
+  vis+='</div>';
+  document.getElementById('semana-visual').innerHTML=vis;
+}
+
+function copiarResumen(){
+  const txt=document.getElementById('resumen-output').textContent;
+  if(txt.startsWith('Completa'))return;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='✓ ¡Copiado! Pégalo en WhatsApp';
+    setTimeout(()=>{btn.textContent='📋 Copiar para WhatsApp';},3000);
+  }).catch(()=>alert('Selecciona el texto y cópialo manualmente.'));
+}
+
+function exportarCSV(){
+  const headers=[
+    'Clienta','Semana','Grupo','Fecha_exportacion','Día',
+    'Antojo_tuvo','Antojo_qué','Antojo_hora','Antojo_intensidad','Antojo_gatillos','Bocado_técnica_aplicó',
+    'Desayuno','Comida','Cena','Extra',
+    'Hambre_antes_1a10','Saciedad_después_1a10','Mindful_eating','Agua_vasos',
+    'Pasos','Min_ejercicio','Ejercicio_tipo','Cuerpo_sentir',
+    'Resistencia_superada','Qué_ayudó','Regla_2min',
+    'Emoción_hoy','Sueño_horas','Sueño_calidad','Energía_1a10','Semáforo',
+    'Victoria','Aprendizaje','Compromiso','Notas_extra'
+  ];
+  const fecha=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const rows=['\uFEFF'+headers.join(',')];
+  DAYS.forEach((day,i)=>{
+    const d=weekData[i]||{};
+    rows.push([
+      esc(clientaNombre),esc(clientaSemana),esc(clientaGrupo),esc(fecha),day,
+      d.antojo_tuvo||'',esc(d.antojo_que||''),esc(d.antojo_hora||''),d.antojo_intensidad||'',esc(d.antojo_gatillos||''),d.bocado_tecnica||'',
+      esc(d.comida_desayuno||''),esc(d.comida_comida||''),esc(d.comida_cena||''),esc(d.comida_extra||''),
+      d.hambre_antes||'',d.saciedad_despues||'',d.mindful||'',d.agua_vasos||'',
+      d.pasos||'',d.min_ejercicio||'',esc(d.ejercicio_tipo||''),esc(d.cuerpo_sentir||''),
+      d.resistencia_superada||'',esc(d.que_ayudo||''),d.regla2min||'',
+      esc(d.emocion_hoy||''),d.sueno_horas||'',d.sueno_calidad||'',d.energia||'',d.semaforo||'',
+      esc(d.victoria||''),esc(d.aprendizaje||''),esc(d.compromiso||''),esc(d.notas_extra||'')
+    ].join(','));
+  });
+  const nombre=`equilibra_${(clientaNombre||'clienta').replace(/\s+/g,'_').toLowerCase()}_sem${clientaSemana||'X'}.csv`;
+  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=nombre;a.click();URL.revokeObjectURL(url);
+}
+
+function esc(s){return'"'+String(s).replace(/"/g,'""')+'"';}
+</script>
+</body>
+</html>
